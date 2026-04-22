@@ -69,6 +69,10 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(HttpMessageNotReadableException.class)
     public ResponseEntity<ApiResponse<Void>> handleMalformedJson(HttpMessageNotReadableException ex) {
+        Throwable cause = ex.getMostSpecificCause();
+        if (cause instanceof IllegalArgumentException) {
+            return buildResponse(HttpStatus.BAD_REQUEST, cause.getMessage());
+        }
         return buildResponse(HttpStatus.BAD_REQUEST, "Malformed JSON request body");
     }
 

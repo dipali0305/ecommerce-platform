@@ -15,17 +15,14 @@
         <module>auth-service</module>
     </modules>
 
-    <!-- 🔥 Centralized Properties -->
     <properties>
         <java.version>21</java.version>
         <spring.boot.version>3.2.5</spring.boot.version>
     </properties>
 
-    <!-- 🔥 Spring Boot Dependency Management -->
     <dependencyManagement>
         <dependencies>
 
-            <!-- Spring Boot BOM -->
             <dependency>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-dependencies</artifactId>
@@ -34,7 +31,6 @@
                 <scope>import</scope>
             </dependency>
 
-            <!-- Internal module (no hardcoding later) -->
             <dependency>
                 <groupId>com.ecommerce</groupId>
                 <artifactId>common-dto</artifactId>

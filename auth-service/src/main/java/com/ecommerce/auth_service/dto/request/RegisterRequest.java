@@ -1,5 +1,6 @@
 package com.ecommerce.auth_service.dto.request;
 
+import com.ecommerce.auth_service.enums.RoleName;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
@@ -29,5 +30,5 @@ public class RegisterRequest {
     private String password;
 
     @Pattern(regexp = "^(CUSTOMER|SELLER)?$", message = "Role must be either CUSTOMER or SELLER")
-    private String role;
+    private RoleName role;
 }

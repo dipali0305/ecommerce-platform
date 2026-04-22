@@ -16,6 +16,7 @@ import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.StringUtils;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -54,19 +55,16 @@ public class UserService {
         }
     }
 
-    private Set<Role> resolveRoles(String requestedRole) {
-        Set<Role> roles = new HashSet<>();
-
-        Role customerRole = roleRepository.findByRoleName(RoleName.CUSTOMER)
-                .orElseThrow(() -> new ResourceNotFoundException("System role CUSTOMER not configured"));
-        roles.add(customerRole);
-
-        if (RoleName.SELLER.name().equalsIgnoreCase(requestedRole)) {
-            Role sellerRole = roleRepository.findByRoleName(RoleName.SELLER)
-                    .orElseThrow(() -> new ResourceNotFoundException("System role SELLER not configured"));
-            roles.add(sellerRole);
+    private Set<Role> resolveRoles(RoleName requestedRole) {
+        RoleName roleName = (requestedRole != null) ? requestedRole : RoleName.CUSTOMER;
+        if (roleName == RoleName.ADMIN) {
+            throw new BadRequestException("Admin role cannot be assigned during registration");
         }
 
-        return roles;
+        Role role = roleRepository.findByRoleName(roleName)
+                .orElseThrow(() -> new ResourceNotFoundException(
+                        "System role " + roleName + " not configured"));
+
+        return Set.of(role);
     }
 }

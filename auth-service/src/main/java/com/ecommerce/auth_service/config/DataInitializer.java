@@ -52,27 +52,21 @@ public class DataInitializer implements CommandLineRunner {
         });
     }
 
-    @Transactional
     protected void initAdminUser() {
         if (userRepository.findByEmail(adminEmail).isPresent()) {
             log.info("Admin user already exists, skipping creation");
             return;
         }
-
-        // Validate admin password meets minimum security requirements
         if (adminPassword == null || adminPassword.length() < 8) {
             throw new IllegalStateException(
                     "Admin password must be at least 8 characters. Set ADMIN_PASSWORD environment variable.");
         }
 
-        Set<Role> adminRoles = new HashSet<>();
-        for (RoleName roleName : RoleName.values()) {
-            Role role = roleRepository.findByRoleName(roleName)
-                    .orElseThrow(() -> new IllegalStateException(
-                            "Role " + roleName + " not found. Ensure initRoles() ran successfully."));
-            adminRoles.add(role);
-        }
+        Role adminRole = roleRepository.findByRoleName(RoleName.ADMIN)
+                .orElseThrow(() -> new IllegalStateException(
+                        "Role ADMIN not found. Ensure initRoles() ran successfully."));
 
+        Set<Role> adminRoles = Set.of(adminRole);
         User admin = new User();
         admin.setName(adminName);
         admin.setEmail(adminEmail.toLowerCase().trim());

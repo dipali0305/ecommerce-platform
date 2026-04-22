@@ -57,4 +57,38 @@ public class JwtProvider {
                 .compact();
     }
 
+    public Claims parseToken(String token) {
+        return Jwts.parser()
+                .verifyWith(signingKey)
+                .build()
+                .parseSignedClaims(token)
+                .getPayload();
+    }
+
+    public Claims parseTokenSafe(String token) {
+        try {
+            return parseToken(token);
+        } catch (JwtException | IllegalArgumentException e) {
+            log.debug("Invalid JWT: {}", e.getMessage());
+            return null;
+        }
+    }
+
+    public UUID getUserIdFromClaims(Claims claims) {
+        return UUID.fromString(claims.getSubject());
+    }
+
+    @SuppressWarnings("unchecked")
+    public List<String> getRolesFromClaims(Claims claims) {
+        return claims.get(AuthConstants.CLAIM_ROLES, List.class);
+    }
+
+    public String getEmailFromClaims(Claims claims) {
+        return claims.get(AuthConstants.CLAIM_EMAIL, String.class);
+    }
+
+    public long getExpirationMs() {
+        return jwtExpirationMs;
+    }
+
 }
