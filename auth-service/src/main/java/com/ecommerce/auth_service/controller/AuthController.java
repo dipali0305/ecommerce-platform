@@ -75,6 +75,13 @@ public class AuthController {
                         .build()));
     }
 
+    @PostMapping("/auth/refresh")
+    public ResponseEntity<ApiResponse<LoginResponse>> refresh(@Valid @RequestBody RefreshTokenRequest request) {
+        LoginResponse response = authService.refresh(request);
+        return ResponseEntity.ok(ApiResponse.success(HttpStatus.OK, "Token refreshed successfully", response));
+    }
+
+
     private String extractTokenOrThrow(HttpServletRequest request) {
         String header = request.getHeader(AuthConstants.AUTH_HEADER);
         if (header != null && header.startsWith(AuthConstants.BEARER_PREFIX)) {

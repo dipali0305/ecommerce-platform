@@ -43,28 +43,27 @@ public class UserService {
         user.setName(request.getName().trim());
         user.setEmail(normalizedEmail);
         user.setPasswordHash(passwordEncoder.encode(request.getPassword()));
-        user.setRoles(resolveRoles(request.getRole()));
+        user.setRole(resolveRole(request.getRole()));
 
         try {
             User saved = userRepository.save(user);
             log.info("User registered: {}", saved.getEmail());
             return UserResponse.from(saved);
         } catch (DataIntegrityViolationException ex) {
-            log.warn("Duplicate email registration attempt caught by DB constraint: {}", normalizedEmail);
+            log.warn("Duplicate email registration attempt: {}", normalizedEmail);
             throw new BadRequestException("Email already registered");
         }
     }
 
-    private Set<Role> resolveRoles(RoleName requestedRole) {
+    private Role resolveRole(RoleName requestedRole) {
         RoleName roleName = (requestedRole != null) ? requestedRole : RoleName.CUSTOMER;
+
         if (roleName == RoleName.ADMIN) {
             throw new BadRequestException("Admin role cannot be assigned during registration");
         }
 
-        Role role = roleRepository.findByRoleName(roleName)
+        return roleRepository.findByRoleName(roleName)
                 .orElseThrow(() -> new ResourceNotFoundException(
-                        "System role " + roleName + " not configured"));
-
-        return Set.of(role);
+                        "Role not found: " + roleName));
     }
 }

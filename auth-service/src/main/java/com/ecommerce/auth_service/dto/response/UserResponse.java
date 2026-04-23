@@ -18,7 +18,7 @@ public class UserResponse {
     private UUID userId;
     private String name;
     private String email;
-    private Set<String> roles;
+    private String role;
     private Instant createdAt;
 
     // Admin-only fields — null (excluded from JSON) for non-admin responses
@@ -32,9 +32,7 @@ public class UserResponse {
                 .userId(user.getUserId())
                 .name(user.getName())
                 .email(user.getEmail())
-                .roles(user.getRoles().stream()
-                        .map(role -> role.getRoleName().name())
-                        .collect(Collectors.toSet()))
+                .role(user.getRole().getRoleName().name())
                 .createdAt(user.getCreatedAt())
                 .build();
     }
@@ -47,9 +45,7 @@ public class UserResponse {
                 .userId(user.getUserId())
                 .name(user.getName())
                 .email(user.getEmail())
-                .roles(user.getRoles().stream()
-                        .map(role -> role.getRoleName().name())
-                        .collect(Collectors.toSet()))
+                .role(user.getRole().getRoleName().name())
                 .status(user.getStatus())
                 .accountLocked(user.isAccountLocked())
                 .failedLoginAttempts(user.getFailedLoginAttempts())

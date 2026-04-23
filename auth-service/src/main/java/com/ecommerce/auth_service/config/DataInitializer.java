@@ -66,14 +66,13 @@ public class DataInitializer implements CommandLineRunner {
                 .orElseThrow(() -> new IllegalStateException(
                         "Role ADMIN not found. Ensure initRoles() ran successfully."));
 
-        Set<Role> adminRoles = Set.of(adminRole);
         User admin = new User();
         admin.setName(adminName);
         admin.setEmail(adminEmail.toLowerCase().trim());
         admin.setPasswordHash(passwordEncoder.encode(adminPassword));
-        admin.setRoles(adminRoles);
+        admin.setRole(adminRole);
 
         userRepository.save(admin);
-        log.info("Default admin user created with email: {} and roles: {}", adminEmail, adminRoles.size());
+        log.info("Default admin user created with email: {}", adminEmail);
     }
 }
