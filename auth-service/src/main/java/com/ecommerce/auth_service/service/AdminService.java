@@ -1,7 +1,9 @@
 package com.ecommerce.auth_service.service;
 
 import com.ecommerce.auth_service.dto.response.UserResponse;
+import com.ecommerce.auth_service.entity.Role;
 import com.ecommerce.auth_service.entity.User;
+import com.ecommerce.auth_service.enums.RoleName;
 import com.ecommerce.auth_service.exception.ResourceNotFoundException;
 import com.ecommerce.auth_service.repository.RoleRepository;
 import com.ecommerce.auth_service.repository.UserRepository;
@@ -42,5 +44,42 @@ public class AdminService {
     private User findUserOrThrow(UUID userId) {
         return userRepository.findById(userId)
                 .orElseThrow(() -> new ResourceNotFoundException("User not found with id: " + userId));
+    }
+
+    @Transactional
+    public void unlockUser(UUID userId) {
+        User user = findUserOrThrow(userId);
+
+        if (!user.isAccountLocked()) {
+            log.info("Account already unlocked for user: {}", userId);
+            return;
+        }
+
+        user.setAccountLocked(false);
+        user.setFailedLoginAttempts(0);
+        user.setLockedAt(null);
+        userRepository.save(user);
+        log.info("Account unlocked by admin for user: {}", userId);
+    }
+
+    public UserResponse updateUserRole(UUID userId, RoleName roleName) {
+        UserResponse response = updateRoleTransactional(userId, roleName);
+        tokenService.revokeAllTokens(userId);
+        return response;
+    }
+
+    @Transactional
+    protected UserResponse updateRoleTransactional(UUID userId, RoleName roleName) {
+        User user = findUserOrThrow(userId);
+
+        Role role = roleRepository.findByRoleName(roleName)
+                .orElseThrow(() -> new ResourceNotFoundException("Role not found"));
+        user.setRole(role);
+        return UserResponse.adminView(userRepository.save(user));
+    }
+
+    private Role findRoleOrThrow(RoleName roleName) {
+        return roleRepository.findByRoleName(roleName)
+                .orElseThrow(() -> new ResourceNotFoundException("Role not found: " + roleName));
     }
 }

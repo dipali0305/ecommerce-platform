@@ -26,6 +26,7 @@ public class PasswordService {
     private final UserRepository userRepository;
     private final TokenService tokenService;
     private final PasswordEncoder passwordEncoder;
+    private final EmailService emailService;
 
     @Value("${app.password-reset.expiration-ms}")
     private long resetTokenExpirationMs;
@@ -36,6 +37,8 @@ public class PasswordService {
         userRepository.findByEmail(email).ifPresent(user -> {
             String resetToken = generateSecureToken();
             tokenService.storeResetToken(resetToken, user.getUserId(), resetTokenExpirationMs);
+            long expirationMinutes = resetTokenExpirationMs / 60000;
+            emailService.sendPasswordResetEmail(email, resetToken, expirationMinutes);
         });
     }
 

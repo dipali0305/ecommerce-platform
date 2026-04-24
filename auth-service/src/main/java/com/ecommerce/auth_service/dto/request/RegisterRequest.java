@@ -29,6 +29,5 @@ public class RegisterRequest {
     )
     private String password;
 
-    @Pattern(regexp = "^(CUSTOMER|SELLER)?$", message = "Role must be either CUSTOMER or SELLER")
     private RoleName role;
 }

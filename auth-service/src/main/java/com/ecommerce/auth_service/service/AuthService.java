@@ -39,7 +39,6 @@ public class AuthService {
     public LoginResponse login(LoginRequest request) {
 
         String email = request.getEmail().trim().toLowerCase();
-
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new BadCredentialsException("Invalid email or password"));
         validateUserStatus(user);
