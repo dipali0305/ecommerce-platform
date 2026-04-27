@@ -62,8 +62,8 @@ public class GlobalExceptionHandler {
                         fe -> fe.getDefaultMessage() != null ? fe.getDefaultMessage() : "Invalid value",
                         (a, b) -> a
                 ));
-        return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY).body(
-                ApiResponse.error(HttpStatus.UNPROCESSABLE_ENTITY, "Validation failed", errors)
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(
+                ApiResponse.error(HttpStatus.BAD_REQUEST, "Validation failed", errors)
         );
     }
 

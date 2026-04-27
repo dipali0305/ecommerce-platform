@@ -14,6 +14,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import com.ecommerce.auth_service.exception.BadRequestException;
 
 import java.util.UUID;
 
@@ -62,20 +63,31 @@ public class AdminService {
         log.info("Account unlocked by admin for user: {}", userId);
     }
 
-    public UserResponse updateUserRole(UUID userId, RoleName roleName) {
-        UserResponse response = updateRoleTransactional(userId, roleName);
+    public UserResponse updateUserRole(UUID adminUserId,UUID userId, RoleName roleName) {
+        UserResponse response = updateRoleTransactional(adminUserId,userId, roleName);
         tokenService.revokeAllTokens(userId);
         return response;
     }
 
     @Transactional
-    protected UserResponse updateRoleTransactional(UUID userId, RoleName roleName) {
+    protected UserResponse updateRoleTransactional(UUID adminUserId, UUID userId, RoleName roleName) {
+        if (adminUserId.equals(userId)) {
+            throw new BadRequestException("Admins cannot change their own role");
+        }
+        if (roleName == RoleName.ADMIN) {
+            throw new BadRequestException("Admin role cannot be assigned");
+        }
         User user = findUserOrThrow(userId);
-
+        if (user.getRole().getRoleName() == roleName) {
+            throw new BadRequestException("User already has role: " + roleName);
+        }
         Role role = roleRepository.findByRoleName(roleName)
                 .orElseThrow(() -> new ResourceNotFoundException("Role not found"));
+
         user.setRole(role);
-        return UserResponse.adminView(userRepository.save(user));
+        User saved = userRepository.save(user);
+        log.info("Admin {} updated role of user {} to {}", adminUserId, userId, roleName);
+        return UserResponse.adminView(saved);
     }
 
     private Role findRoleOrThrow(RoleName roleName) {

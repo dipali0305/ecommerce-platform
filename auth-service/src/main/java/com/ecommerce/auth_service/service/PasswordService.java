@@ -37,6 +37,7 @@ public class PasswordService {
         userRepository.findByEmail(email).ifPresent(user -> {
             String resetToken = generateSecureToken();
             tokenService.storeResetToken(resetToken, user.getUserId(), resetTokenExpirationMs);
+            System.out.println("resetToken"+ resetToken);
             long expirationMinutes = resetTokenExpirationMs / 60000;
             emailService.sendPasswordResetEmail(email, resetToken, expirationMinutes);
         });

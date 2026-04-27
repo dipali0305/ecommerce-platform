@@ -10,6 +10,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.UUID;
@@ -44,9 +45,10 @@ public class AdminController {
 
     @PutMapping("/users/{userId}/role")
     public ResponseEntity<ApiResponse<UserResponse>> updateRole(
+            @AuthenticationPrincipal UUID adminUserId,
             @PathVariable UUID userId,
             @Valid @RequestBody RoleUpdateRequest request) {
-        UserResponse user = adminService.updateUserRole(userId, request.getRoleName());
+        UserResponse user = adminService.updateUserRole(adminUserId, userId, request.getRoleName());
         return ResponseEntity.ok(ApiResponse.success(HttpStatus.OK, "Role updated successfully", user));
     }
 
