@@ -46,4 +46,30 @@ public class EmailService {
         log.info("Password reset email sent to {}", toEmail);
 
     }
+
+    @Async
+    public void sendActivationEmail(String toEmail, String activationUrl) {
+        SimpleMailMessage mail = new SimpleMailMessage();
+        mail.setTo(toEmail);
+        mail.setFrom(adminEmail);
+        mail.setSubject("Activate Your Account");
+
+        mail.setText("""
+            Hello,
+
+            Thank you for registering!
+
+            Please click the link below to activate your account:
+
+            %s
+
+            This link will expire in 24 hours.
+
+            If you did not register, please ignore this email.
+
+            """.formatted(activationUrl));
+
+        javaMailSender.send(mail);
+        log.info("Activation email sent to {}", toEmail);
+    }
 }

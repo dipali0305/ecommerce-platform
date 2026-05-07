@@ -69,6 +69,7 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(
                                 "/api/v1/user/register",
+                                "/api/v1/user/activate",
                                 "/api/v1/login",
                                 "/api/v1/user/forgot_password",
                                 "/api/v1/user/reset_password",

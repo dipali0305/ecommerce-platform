@@ -12,6 +12,6 @@ public class RefreshTokenRequest {
 
     @JsonProperty("refresh_token")
     @NotBlank(message = "Refresh token is required")
-    @Size(max = 64, message = "Refresh token must not exceed 64 characters")
+    @Size(max = 128, message = "Refresh token must not exceed 128 characters")
     private String refreshToken;
 }

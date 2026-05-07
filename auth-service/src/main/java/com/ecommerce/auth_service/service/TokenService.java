@@ -23,40 +23,83 @@ public class TokenService {
 
 
     public void storeAccessToken(UUID userId, String token, long expirationMs) {
-        String key = AuthConstants.USER_TOKEN_PREFIX + userId;
+        String key = AuthConstants.ACCESS_TOKEN_PREFIX + userId;
         redisTemplate.opsForValue().set(key, token, expirationMs, TimeUnit.MILLISECONDS);
         log.debug("Access token stored for user: {}", userId);
     }
 
     public boolean isTokenValid(UUID userId, String token) {
-        String key = AuthConstants.USER_TOKEN_PREFIX + userId;
+        String key = AuthConstants.ACCESS_TOKEN_PREFIX + userId;
         String storedToken = redisTemplate.opsForValue().get(key);
         return token.equals(storedToken);
     }
 
     public void revokeAccessToken(UUID userId) {
-        String key = AuthConstants.USER_TOKEN_PREFIX + userId;
+        String key = AuthConstants.ACCESS_TOKEN_PREFIX + userId;
         redisTemplate.delete(key);
         log.debug("Access token revoked for user: {}", userId);
     }
 
 
     public String generateAndStoreRefreshToken(UUID userId, long expirationMs) {
-        String refreshToken = generateSecureToken();
-        String key = AuthConstants.REFRESH_TOKEN_PREFIX + refreshToken;
-        redisTemplate.opsForValue().set(key, userId.toString(), expirationMs, TimeUnit.MILLISECONDS);
+        String randomPart = generateSecureToken();
+        String refreshToken = userId + "." + randomPart;
+        String key = AuthConstants.REFRESH_TOKEN_PREFIX + userId;
+        redisTemplate.opsForValue().set(key, refreshToken, expirationMs, TimeUnit.MILLISECONDS);
         log.debug("Refresh token stored for user: {}", userId);
         return refreshToken;
     }
 
     public UUID validateRefreshToken(String refreshToken) {
-        String key = AuthConstants.REFRESH_TOKEN_PREFIX + refreshToken;
+        int dotIndex = refreshToken.indexOf('.');
+        if (dotIndex == -1) return null;
+
+        UUID userId;
+        try {
+            userId = UUID.fromString(refreshToken.substring(0, dotIndex));
+        } catch (IllegalArgumentException e) {
+            return null;
+        }
+
+        String key = AuthConstants.REFRESH_TOKEN_PREFIX + userId;
+        String storedToken = redisTemplate.opsForValue().get(key);
+        return refreshToken.equals(storedToken) ? userId : null;
+    }
+
+    public void deleteRefreshToken(String refreshToken) {
+        // Extract userId from token to build the key
+        int dotIndex = refreshToken.indexOf('.');
+        if (dotIndex == -1) return;
+        try {
+            UUID userId = UUID.fromString(refreshToken.substring(0, dotIndex));
+            String key = AuthConstants.REFRESH_TOKEN_PREFIX + userId;
+            redisTemplate.delete(key);
+        } catch (IllegalArgumentException e) {
+            log.warn("Could not parse userId from refresh token during delete");
+        }
+    }
+
+    public void deleteRefreshTokenByUserId(UUID userId) {
+        String key = AuthConstants.REFRESH_TOKEN_PREFIX + userId;
+        redisTemplate.delete(key);
+        log.debug("Refresh token revoked for user: {}", userId);
+    }
+
+
+    public void storeActivationToken(String token, UUID userId, long expirationMs) {
+        String key = AuthConstants.ACTIVATION_TOKEN_PREFIX + token;
+        redisTemplate.opsForValue().set(key, userId.toString(), expirationMs, TimeUnit.MILLISECONDS);
+        log.debug("Activation token stored for user: {}", userId);
+    }
+
+    public UUID validateActivationToken(String token) {
+        String key = AuthConstants.ACTIVATION_TOKEN_PREFIX + token;
         String userId = redisTemplate.opsForValue().get(key);
         return userId != null ? UUID.fromString(userId) : null;
     }
 
-    public void deleteRefreshToken(String refreshToken) {
-        String key = AuthConstants.REFRESH_TOKEN_PREFIX + refreshToken;
+    public void deleteActivationToken(String token) {
+        String key = AuthConstants.ACTIVATION_TOKEN_PREFIX + token;
         redisTemplate.delete(key);
     }
 
@@ -80,7 +123,8 @@ public class TokenService {
 
     public void revokeAllTokens(UUID userId) {
         revokeAccessToken(userId);
-        log.debug("All access tokens revoked for user: {}", userId);
+        deleteRefreshTokenByUserId(userId);
+        log.debug("All tokens revoked for user: {}", userId);
     }
 
     private String generateSecureToken() {

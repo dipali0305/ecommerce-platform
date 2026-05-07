@@ -33,8 +33,14 @@ public class UserController {
         UserResponse user = userService.register(request);
         return ResponseEntity
                 .status(HttpStatus.CREATED)
-                .body(ApiResponse.success(HttpStatus.CREATED, "User registered successfully", user));
+                .body(ApiResponse.success(HttpStatus.CREATED, "Registration successful. Please check your email to activate your account.", user));
+    }
 
+
+    @GetMapping("/activate")
+    public ResponseEntity<ApiResponse<Void>> activateAccount(@RequestParam String token) {
+        userService.activateAccount(token);
+        return ResponseEntity.ok(ApiResponse.success(HttpStatus.OK, "Account activated successfully. You can now log in."));
     }
 
     @PostMapping("/forgot_password")

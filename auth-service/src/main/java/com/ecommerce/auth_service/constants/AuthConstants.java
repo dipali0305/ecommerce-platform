@@ -11,9 +11,10 @@ public final class AuthConstants {
     public static final String BEARER_PREFIX = "Bearer ";
 
     // Redis key prefixes
-    public static final String USER_TOKEN_PREFIX = "user_token:";
+    public static final String ACCESS_TOKEN_PREFIX = "access_token:";
     public static final String REFRESH_TOKEN_PREFIX = "refresh_token:";
     public static final String RESET_TOKEN_PREFIX = "reset_token:";
+    public static final String ACTIVATION_TOKEN_PREFIX = "activation_token:";
 
     // Token type
     public static final String TOKEN_TYPE_BEARER = "Bearer";
